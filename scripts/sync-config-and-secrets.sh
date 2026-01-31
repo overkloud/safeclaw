@@ -111,10 +111,11 @@ sync_secrets() {
     done
 }
 
-# Sync Claude credentials (compare expiresAt, not file timestamps)
-sync_credentials() {
-    local host_file="$HOST_BASE/.claude/.credentials.json"
-    local container_file="/home/sclaw/.claude/.credentials.json"
+# Sync a single file (newer wins)
+sync_file() {
+    local name="$1"
+    local host_file="$2"
+    local container_file="$3"
 
     local container_has=false
     local host_has=false
@@ -123,41 +124,60 @@ sync_credentials() {
     [ -f "$host_file" ] && host_has=true
 
     if $container_has && ! $host_has; then
-        echo "[credentials] Syncing: container -> host"
-        mkdir -p "$HOST_BASE/.claude"
+        echo "[$name] Syncing: container -> host"
+        mkdir -p "$(dirname "$host_file")"
         docker cp "$CONTAINER_NAME:$container_file" "$host_file"
 
     elif $host_has && ! $container_has; then
-        echo "[credentials] Syncing: host -> container"
-        docker exec "$CONTAINER_NAME" mkdir -p /home/sclaw/.claude
+        echo "[$name] Syncing: host -> container"
+        docker exec "$CONTAINER_NAME" mkdir -p "$(dirname "$container_file")"
         docker cp "$host_file" "$CONTAINER_NAME:$container_file"
         docker exec -u root "$CONTAINER_NAME" chown sclaw:sclaw "$container_file"
 
     elif $container_has && $host_has; then
-        local container_expiry=$(docker exec "$CONTAINER_NAME" jq -r '.claudeAiOauth.expiresAt // 0' "$container_file" 2>/dev/null)
-        local host_expiry=$(jq -r '.claudeAiOauth.expiresAt // 0' "$host_file" 2>/dev/null)
+        # For .claude.json: prefer the side that has login state, regardless of timestamp
+        local host_has_auth=false
+        local container_has_auth=false
+        if [[ "$container_file" == *".claude.json" ]]; then
+            jq -e '.oauthAccount' "$host_file" > /dev/null 2>&1 && host_has_auth=true
+            docker exec "$CONTAINER_NAME" jq -e '.oauthAccount' "$container_file" > /dev/null 2>&1 && container_has_auth=true
 
-        if [ "$container_expiry" -gt "$host_expiry" ]; then
-            echo "[credentials] Syncing: container -> host (container token expires later)"
+            if $host_has_auth && ! $container_has_auth; then
+                echo "[$name] Syncing: host -> container (host has auth)"
+                docker cp "$host_file" "$CONTAINER_NAME:$container_file"
+                docker exec -u root "$CONTAINER_NAME" chown sclaw:sclaw "$container_file"
+                return
+            elif $container_has_auth && ! $host_has_auth; then
+                echo "[$name] Syncing: container -> host (container has auth)"
+                docker cp "$CONTAINER_NAME:$container_file" "$host_file"
+                return
+            fi
+        fi
+
+        local container_time=$(docker exec "$CONTAINER_NAME" stat -c %Y "$container_file" 2>/dev/null)
+        local host_time=$(stat -f %m "$host_file" 2>/dev/null)
+
+        if [ "$container_time" -gt "$host_time" ]; then
+            echo "[$name] Syncing: container -> host (container is newer)"
             docker cp "$CONTAINER_NAME:$container_file" "$host_file"
-        elif [ "$host_expiry" -gt "$container_expiry" ]; then
-            echo "[credentials] Syncing: host -> container (host token expires later)"
+        elif [ "$host_time" -gt "$container_time" ]; then
+            echo "[$name] Syncing: host -> container (host is newer)"
             docker cp "$host_file" "$CONTAINER_NAME:$container_file"
             docker exec -u root "$CONTAINER_NAME" chown sclaw:sclaw "$container_file"
         else
-            echo "[credentials] Already in sync"
+            echo "[$name] Already in sync"
         fi
     fi
 }
 
-# Sync Claude credentials first (uses expiresAt comparison)
-sync_credentials
+# Sync Claude state (.claude.json has account info + login state)
+sync_file "claude.json" "$HOST_BASE/.claude.json" "/home/sclaw/.claude.json"
 
-# Sync rest of Claude config (uses file timestamp comparison)
+# Sync Claude config directory (credentials, settings, etc.)
 sync_dir "config" "$HOST_BASE/.claude" "/home/sclaw/.claude" ".credentials.json"
 
 # Sync GitHub CLI config (whole directory)
-sync_dir "gh" "$HOST_BASE/.gh" "/home/sclaw/.config/gh" "hosts.yml"
+sync_dir "gh" "$HOST_BASE/.config/gh" "/home/sclaw/.config/gh" "hosts.yml"
 
 # Sync secrets (merge files)
 sync_secrets

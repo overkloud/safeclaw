@@ -93,12 +93,6 @@ fi
 # Run container setup (idempotent - skips if already done)
 docker exec "$CONTAINER_NAME" bash -c "curl -sL https://raw.githubusercontent.com/ykdojo/claude-code-tips/main/scripts/container-setup.sh | bash"
 
-# Copy tools and CLAUDE.md to container
-PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
-docker cp "$PROJECT_DIR/tools" "$CONTAINER_NAME:/home/sclaw/tools"
-docker cp "$PROJECT_DIR/setup/CLAUDE.md" "$CONTAINER_NAME:/home/sclaw/.claude/CLAUDE.md"
-docker exec -u root "$CONTAINER_NAME" chown -R sclaw:sclaw /home/sclaw/tools /home/sclaw/.claude/CLAUDE.md
-
 # Attach interactively
 echo "Entering container..."
 docker exec -it "$CONTAINER_NAME" /bin/bash

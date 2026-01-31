@@ -53,6 +53,12 @@ ENV NODE_PATH=/usr/lib/node_modules
 USER sclaw
 WORKDIR /home/sclaw
 ENV PATH="/home/sclaw/.local/bin:${PATH}"
+ENV DISABLE_AUTOUPDATER=1
+
+# Bake tools and Claude config into image
+COPY --chown=sclaw:sclaw tools/ /home/sclaw/tools/
+COPY --chown=sclaw:sclaw setup/CLAUDE.md /home/sclaw/.claude/CLAUDE.md
+COPY --chown=sclaw:sclaw setup/commands/ /home/sclaw/.claude/commands/
 
 RUN curl -fsSL https://claude.ai/install.sh | bash -s -- ${CLAUDE_CODE_VERSION}
 
