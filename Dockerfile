@@ -63,6 +63,12 @@ COPY --chown=sclaw:sclaw setup/CLAUDE.md /home/sclaw/.claude/CLAUDE.md
 COPY --chown=sclaw:sclaw setup/commands/ /home/sclaw/.claude/commands/
 COPY --chown=sclaw:sclaw setup/settings.json /home/sclaw/.claude/settings.json
 
+# Install check-context hook script (auto half-clone at 80% context)
+RUN mkdir -p /home/sclaw/.claude/scripts && \
+    curl -sLo /home/sclaw/.claude/scripts/check-context.sh \
+      https://raw.githubusercontent.com/ykdojo/claude-code-tips/main/scripts/check-context.sh && \
+    chmod +x /home/sclaw/.claude/scripts/check-context.sh
+
 RUN curl -fsSL https://claude.ai/install.sh | bash -s -- ${CLAUDE_CODE_VERSION}
 
 # === PATCH Claude Code ===
