@@ -3,6 +3,10 @@
     "DISABLE_AUTOUPDATER": "1",
     "ENABLE_TOOL_SEARCH": "true"
   },
+  "attribution": {
+    "commit": "",
+    "pr": ""
+  },
   "mcpServers": {
     "playwright": {
       "command": "playwright-mcp",
