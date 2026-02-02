@@ -41,3 +41,4 @@ Tokens are stored on the host in `~/.config/safeclaw/.secrets/` and injected as 
 |--------|-------------|
 | `scripts/build.sh` | Build the Docker image and remove old container |
 | `scripts/run.sh` | Start/reuse container, inject auth, start ttyd on port 7681 |
+| `scripts/restart.sh` | Kill and restart the web terminal (ttyd + tmux) |
