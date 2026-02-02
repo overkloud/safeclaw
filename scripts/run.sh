@@ -99,3 +99,10 @@ echo ""
 echo "SafeClaw is running at: http://localhost:7681"
 echo ""
 echo "To stop: docker stop $CONTAINER_NAME"
+
+# Open in browser
+if command -v open >/dev/null 2>&1; then
+    open http://localhost:7681
+elif command -v xdg-open >/dev/null 2>&1; then
+    xdg-open http://localhost:7681
+fi
