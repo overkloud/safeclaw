@@ -2,22 +2,53 @@
 # Start/reuse container, inject auth tokens, start ttyd web terminal
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-CONTAINER_NAME="safeclaw"
 SECRETS_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/safeclaw/.secrets"
+SESSION_NAME=""
 VOLUME_MOUNT=""
 
 # Parse arguments
-while getopts "v:" opt; do
+while getopts "s:v:" opt; do
     case $opt in
+        s)
+            SESSION_NAME="$OPTARG"
+            ;;
         v)
             VOLUME_MOUNT="$OPTARG"
             ;;
         *)
-            echo "Usage: $0 [-v /host/path:/container/path]"
+            echo "Usage: $0 [-s session_name] [-v /host/path:/container/path]"
             exit 1
             ;;
     esac
 done
+
+# Set container name based on session
+if [ -n "$SESSION_NAME" ]; then
+    CONTAINER_NAME="safeclaw-${SESSION_NAME}"
+else
+    CONTAINER_NAME="safeclaw"
+fi
+
+# Find available port (starting from 7681)
+find_available_port() {
+    local port=7681
+    while docker ps --format '{{.Ports}}' | grep -q ":${port}->"; do
+        port=$((port + 1))
+    done
+    echo $port
+}
+
+# Get port for this container (reuse existing or find new)
+get_container_port() {
+    local existing_port=$(docker ps --format '{{.Names}} {{.Ports}}' | grep "^${CONTAINER_NAME} " | sed -n 's/.*:\([0-9]*\)->7681.*/\1/p')
+    if [ -n "$existing_port" ]; then
+        echo "$existing_port"
+    else
+        find_available_port
+    fi
+}
+
+PORT=$(get_container_port)
 
 # Check if image exists
 if ! docker images -q safeclaw | grep -q .; then
@@ -46,7 +77,7 @@ else
         VOLUME_FLAG="-v $VOLUME_MOUNT"
         echo "Mounting volume: $VOLUME_MOUNT"
     fi
-    docker run -d --ipc=host --name "$CONTAINER_NAME" -p 127.0.0.1:7681:7681 $VOLUME_FLAG safeclaw sleep infinity > /dev/null
+    docker run -d --ipc=host --name "$CONTAINER_NAME" -p 127.0.0.1:${PORT}:7681 $VOLUME_FLAG safeclaw sleep infinity > /dev/null
 fi
 
 # === Claude Code token setup ===
@@ -133,18 +164,25 @@ if [ -f "$SECRETS_DIR/GH_TOKEN" ]; then
     '
 fi
 
+# Set title based on session name
+if [ -n "$SESSION_NAME" ]; then
+    TITLE="SafeClaw - ${SESSION_NAME}"
+else
+    TITLE="SafeClaw"
+fi
+
 # Start ttyd with wrapper that passes env vars through to tmux
 docker exec $ENV_FLAGS -d "$CONTAINER_NAME" \
-    ttyd -W -p 7681 /home/sclaw/ttyd-wrapper.sh
+    ttyd -W -t titleFixed="$TITLE" -p 7681 /home/sclaw/ttyd-wrapper.sh
 
 echo ""
-echo "SafeClaw is running at: http://localhost:7681"
+echo "SafeClaw is running at: http://localhost:${PORT}"
 echo ""
 echo "To stop: docker stop $CONTAINER_NAME"
 
 # Open in browser
 if command -v open >/dev/null 2>&1; then
-    open http://localhost:7681
+    open "http://localhost:${PORT}"
 elif command -v xdg-open >/dev/null 2>&1; then
-    xdg-open http://localhost:7681
+    xdg-open "http://localhost:${PORT}"
 fi
