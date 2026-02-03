@@ -112,7 +112,6 @@ function startContainer(name) {
         const secretsDir = process.env.HOME + '/.config/safeclaw/.secrets';
         let envFlags = '';
         try {
-            const fs = require('fs');
             const files = fs.readdirSync(secretsDir);
             files.forEach(f => {
                 const val = fs.readFileSync(`${secretsDir}/${f}`, 'utf8').trim();
@@ -123,9 +122,15 @@ function startContainer(name) {
         const sessionName = name.replace('safeclaw-', '').replace('safeclaw', 'default');
         const title = name === 'safeclaw' ? 'SafeClaw' : `SafeClaw - ${sessionName}`;
         execSync(`docker exec ${envFlags} -d ${name} ttyd -W -t titleFixed="${title}" -p 7681 /home/sclaw/ttyd-wrapper.sh`, { encoding: 'utf8' });
-        return true;
+
+        // Get the port
+        const portInfo = execSync(`docker ps --filter "name=^${name}$" --format "{{.Ports}}"`, { encoding: 'utf8' }).trim();
+        const portMatch = portInfo.match(/:(\d+)->/);
+        const port = portMatch ? portMatch[1] : '7681';
+
+        return { success: true, url: `http://localhost:${port}` };
     } catch (e) {
-        return false;
+        return { success: false };
     }
 }
 
@@ -155,7 +160,7 @@ function renderContent(sessions) {
             : `<button class="delete-btn" onclick="deleteSession('${s.name}', this)">delete</button>`;
 
         return `
-        <tr class="${s.active ? '' : 'inactive-row'}">
+        <tr class="${s.active ? '' : 'inactive-row'}" data-name="${s.name}" data-url="${s.url || ''}">
             <td>${displayName}</td>
             <td>${urlCell}</td>
             <td class="volume">${s.volume || '-'}</td>
@@ -219,9 +224,9 @@ const server = http.createServer((req, res) => {
         req.on('data', chunk => body += chunk);
         req.on('end', () => {
             const { name } = JSON.parse(body);
-            const success = startContainer(name);
+            const result = startContainer(name);
             res.writeHead(200, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({ success }));
+            res.end(JSON.stringify(result));
         });
     } else if (url.pathname === '/api/events') {
         // Server-Sent Events for real-time updates

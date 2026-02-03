@@ -184,7 +184,18 @@
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ name })
-                }).then(() => location.reload());
+                }).then(() => {
+                    // Update row to inactive
+                    const row = document.querySelector(`tr[data-name="${name}"]`);
+                    if (row) {
+                        row.classList.add('inactive-row');
+                        row.querySelector('td:nth-child(2)').innerHTML = `<button class="start-btn" onclick="startSession('${name}')">start</button>`;
+                        row.querySelector('td:nth-child(4)').innerHTML = `<button class="delete-btn" onclick="deleteSession('${name}', this)">delete</button>`;
+                    }
+                    // Remove iframe
+                    const frame = document.getElementById(`frame-${name}`);
+                    if (frame) frame.remove();
+                });
                 return;
             }
 
@@ -224,7 +235,18 @@
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ name })
-                }).then(() => location.reload());
+                }).then(() => {
+                    // Update row to inactive
+                    const row = document.querySelector(`tr[data-name="${name}"]`);
+                    if (row) {
+                        row.classList.add('inactive-row');
+                        row.querySelector('td:nth-child(2)').innerHTML = `<button class="start-btn" onclick="startSession('${name}')">start</button>`;
+                        row.querySelector('td:nth-child(4)').innerHTML = `<button class="delete-btn" onclick="deleteSession('${name}', this)">delete</button>`;
+                    }
+                    // Remove iframe
+                    const frame = document.getElementById(`frame-${name}`);
+                    if (frame) frame.remove();
+                });
                 return;
             }
 
@@ -246,7 +268,14 @@
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ name })
-                }).then(() => location.reload());
+                }).then(() => {
+                    // Remove row
+                    const row = document.querySelector(`tr[data-name="${name}"]`);
+                    if (row) row.remove();
+                    // Remove iframe if exists
+                    const frame = document.getElementById(`frame-${name}`);
+                    if (frame) frame.remove();
+                });
                 return;
             }
 
@@ -265,21 +294,45 @@
             btn.timeout = setTimeout(() => resetButton(btn), 3000);
         }
         async function startSession(name) {
-            await fetch('/api/start', {
+            const res = await fetch('/api/start', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ name })
             });
-            location.reload();
+            const data = await res.json();
+            if (data.success) {
+                const row = document.querySelector(`tr[data-name="${name}"]`);
+                if (row) {
+                    const url = data.url || row.dataset.url;
+                    const displayUrl = url.replace('http://', '');
+                    row.classList.remove('inactive-row');
+                    row.querySelector('td:nth-child(2)').innerHTML = `<a href="${url}" target="_blank">${displayUrl}</a>`;
+                    row.querySelector('td:nth-child(4)').innerHTML = `<button class="stop-btn" onclick="stopSession('${name}', this)">stop</button>`;
+                    // Add iframe (only if not already present)
+                    const displayName = name.replace('safeclaw-', '').replace('safeclaw', 'default');
+                    const frames = document.querySelector('.frames');
+                    if (frames && !document.getElementById(`frame-${name}`)) {
+                        frames.insertAdjacentHTML('beforeend', `
+                            <div class="frame" id="frame-${name}">
+                                <div class="frame-bar">
+                                    <span>${displayName}</span>
+                                    <div class="frame-actions">
+                                        <a href="#" class="frame-stop" onclick="stopSessionLink('${name}', this); return false;">stop</a>
+                                        <a href="#" onclick="document.querySelector('#frame-${name} iframe').src='${url}'; return false;">refresh</a>
+                                        <a href="${url}" target="_blank">open</a>
+                                    </div>
+                                </div>
+                                <iframe src="${url}"></iframe>
+                            </div>
+                        `);
+                    }
+                }
+            }
         }
 
-        // Real-time updates via Server-Sent Events
+        // SSE connection kept for future use but no auto-reload
+        // (we update DOM directly now)
         const events = new EventSource('/api/events');
-        events.onmessage = (e) => {
-            if (e.data !== 'connected') {
-                location.reload();
-            }
-        };
 
     </script>
 </head>
