@@ -7,7 +7,7 @@ See [architecture.md](architecture.md) for design details.
 ## Why a container?
 
 - **Isolated** - Claude Code runs with bypass permissions, but can't touch your host machine. A lightweight alternative to a full VM.
-- **Portable** - Works on any machine with Docker (or Podman). Same environment everywhere.
+- **Portable** - Works on any machine with Docker. Same environment everywhere.
 
 ## One session per container
 
