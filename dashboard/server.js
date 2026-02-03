@@ -138,7 +138,7 @@ function renderContent(sessions) {
                 <tr><td><code>./scripts/run.sh -s name</code></td><td>named session</td></tr>
                 <tr><td><code>./scripts/run.sh -n</code></td><td>skip opening browser</td></tr>
                 <tr><td><code>./scripts/run.sh -v ~/p:/home/sclaw/p</code></td><td>mount volume</td></tr>
-                <tr><td><code>./scripts/run.sh -q "question"</code></td><td>one-off query</td></tr>
+                <tr><td><code>./scripts/run.sh -q "question"</code></td><td>start with query</td></tr>
             </table>
         </div>`;
     }
