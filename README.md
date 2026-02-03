@@ -1,8 +1,16 @@
 # SafeClaw
 
-Safety-first personal AI assistant. All execution happens in Docker - no host access.
+The easiest way to run Claude Code in a Docker container. Secure, cloud-ready, with sensible defaults.
 
 See [architecture.md](architecture.md) for design details.
+
+## Why a container?
+
+- **Isolated** - Claude Code runs with bypass permissions, but can't touch your host machine. A lightweight alternative to a full VM.
+- **Portable** - Works on any machine with Docker (or Podman). Same environment everywhere.
+- **Cloud-ready** - Auth via environment variables. Deploy anywhere by setting `CLAUDE_CODE_OAUTH_TOKEN` and `GH_TOKEN`.
+- **Batteries included** - Claude Code, GitHub CLI, Playwright MCP, and useful plugins pre-installed.
+- **Sensible defaults** - Auto-compact disabled, prompt suggestions disabled, auto half-clone at 85% context.
 
 ## Quick start
 
@@ -23,10 +31,11 @@ On first run, `run.sh` will prompt you to set up authentication tokens. It then 
 
 - Ubuntu 24.04
 - Node.js 24 (LTS)
-- Claude Code 2.1.19
-- GitHub CLI
+- Claude Code 2.1.19 (pinned version)
+- GitHub CLI with auto-configured git user
 - Playwright MCP with Chromium
-- DX plugin, status line, aliases
+- Slack read-only skill and tool (optional, requires token)
+- DX plugin, custom status line, shell aliases
 - ttyd web terminal + tmux
 
 ## Authentication
@@ -39,6 +48,10 @@ Tokens are stored in `~/.config/safeclaw/.secrets/` and injected as env vars on 
 | `GH_TOKEN` | `gh auth token` or create a PAT at github.com/settings/tokens |
 
 You can add any additional secrets by creating files in the `.secrets/` directory. For example, `SLACK_TOKEN` becomes the `SLACK_TOKEN` env var.
+
+## Optional integrations
+
+Run `./scripts/setup-slack.sh` to add Slack read access. More integrations can be added by creating secrets and corresponding tools.
 
 ## Scripts
 

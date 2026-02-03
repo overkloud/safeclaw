@@ -2,7 +2,7 @@
 
 ## Overview
 
-SafeClaw runs Claude Code inside a sandboxed Docker container, accessible via a web terminal. A lightweight Node server handles session management and notifications.
+SafeClaw runs Claude Code inside a sandboxed Docker container, accessible via a web terminal. All authentication is handled via environment variables, making it easy to deploy locally or in the cloud.
 
 ## Web terminal
 
@@ -18,7 +18,7 @@ The user interacts with Claude Code through a browser, not a local terminal. Thi
 
 ### Future: xterm.js + WebSocket
 
-If we need per-session URLs (`/session/abc123`) or tighter integration with the Node server, we can swap ttyd for xterm.js served from the Node server. This would require:
+If we need per-session URLs (`/session/abc123`) or tighter integration, we can swap ttyd for xterm.js. This would require:
 
 - node-pty (native addon, needs build tools in the container)
 - ~50-100 lines of WebSocket + HTML code
@@ -26,45 +26,42 @@ If we need per-session URLs (`/session/abc123`) or tighter integration with the 
 
 Not needed yet. ttyd is simpler and sufficient for now.
 
-## Notifications: Discord
-
-Notifications go through a Discord bot. The Node server posts to a Discord channel when something needs attention (task done, error, needs input).
-
-### Why Discord over WhatsApp
-
-- Discord has an official, stable bot SDK
-- WhatsApp has no official bot API for personal use. The main library (`@whiskeysockets/baileys`) is an unofficial reverse-engineered implementation - security risk
-
-### How it works
-
-- Bot token + your Discord user ID stored alongside other secrets
-- Node server uses discord.js to post messages
-- Notifications only - all actual interaction happens through the web terminal
-
-## Node server
-
-A lightweight Node.js server running inside the container. Responsibilities:
-
-- Start and manage ttyd + tmux
-- Track Claude Code session IDs (for resume)
-- Send Discord notifications
-- Expose a simple HTTP API for health checks
-
-The server does not replace Claude Code's UI or manage conversations directly. It's just the orchestrator.
-
 ## Authentication
+
+All secrets are stored on the host in `~/.config/safeclaw/.secrets/`. Each file becomes an environment variable (filename = env var name).
+
+### How env vars are passed
+
+1. `run.sh` reads all files in `.secrets/` and builds `-e NAME=value` flags
+2. `docker exec` passes these to the `ttyd-wrapper.sh` process
+3. The wrapper stores them in the tmux session via `tmux set-environment`
+4. `.bashrc` loads them with `eval "$(tmux show-environment -s)"` so all shells (including Claude's bash commands) have access
 
 ### Claude Code
 
-Token from `claude setup-token` is stored in `~/.config/safeclaw/.secrets/claude_oauth_token` on the host. `run.sh` injects it as `CLAUDE_CODE_OAUTH_TOKEN` via `docker exec -e`. The ttyd wrapper script writes it to a file that `.bashrc` sources, so tmux shells pick it up.
+Token from `claude setup-token` is stored as `CLAUDE_CODE_OAUTH_TOKEN`. The Dockerfile sets `hasCompletedOnboarding: true` in `.claude.json` to skip the onboarding flow. Without this, interactive mode ignores the token and shows the login screen ([known issue](https://github.com/anthropics/claude-code/issues/8938)).
 
-The Dockerfile sets `hasCompletedOnboarding: true` in `.claude.json` to skip the onboarding flow. Without this, interactive mode ignores the token and shows the login screen ([known issue](https://github.com/anthropics/claude-code/issues/8938)). Known limitation: the token from `setup-token` has limited scopes (`user:inference` only), so `/usage` doesn't work and the status bar shows "Claude API" instead of the subscription name ([#11985](https://github.com/anthropics/claude-code/issues/11985)). Chat works fine.
+Known limitation: the token from `setup-token` has limited scopes (`user:inference` only), so `/usage` doesn't work and the status bar shows "Claude API" instead of the subscription name ([#11985](https://github.com/anthropics/claude-code/issues/11985)). Chat works fine.
 
 ### GitHub CLI
 
-`GH_TOKEN` is stored in `~/.config/safeclaw/.secrets/gh_token` on the host. `run.sh` injects it as an env var via `docker exec -e`. The ttyd wrapper script writes it to a file that `.bashrc` sources, so tmux shells pick it up.
+`GH_TOKEN` is used for GitHub CLI authentication. On container start, `run.sh` also auto-configures git user (name and email) from the GitHub account.
 
 We recommend creating a separate GitHub account for SafeClaw so you can scope its permissions independently.
+
+### Additional secrets
+
+Any file in `.secrets/` becomes an env var. For example, `SLACK_TOKEN` enables the Slack integration. Run `./scripts/setup-slack.sh` to set it up.
+
+## Sensible defaults
+
+The container comes with these defaults baked in:
+
+- Claude Code version pinned (currently 2.1.19)
+- `autoCompactEnabled: false` - prevents automatic context compaction
+- `promptSuggestionEnabled: false` - disables prompt suggestions
+- Auto half-clone hook at 85% context usage
+- Bypass permissions mode enabled (safe because it's containerized)
 
 ## Implementation status
 
@@ -72,10 +69,8 @@ We recommend creating a separate GitHub account for SafeClaw so you can scope it
 
 - All container setup baked into Dockerfile (DX plugin, Playwright MCP, aliases, status line)
 - ttyd + tmux web terminal (port 7681)
-- Claude Code auth via .claude.json sync from host
-- GitHub auth via GH_TOKEN env var
+- Claude Code auth via env var
+- GitHub auth via env var with auto git config
 - Volume mounting via `run.sh -v` flag
-
-### To do
-
-- Node server for session management and Discord notifications
+- Slack integration (optional)
+- Env vars passed securely via tmux session (no files on disk)
