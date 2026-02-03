@@ -141,7 +141,7 @@ function renderContent(sessions) {
             : `<button class="start-btn" onclick="startSession('${s.name}')">start</button>`;
         const actionBtn = s.active
             ? `<button class="stop-btn" onclick="stopSession('${s.name}', this)">stop</button>`
-            : `<button class="delete-btn" onclick="deleteSession('${s.name}')">delete</button>`;
+            : `<button class="delete-btn" onclick="deleteSession('${s.name}', this)">delete</button>`;
 
         return `
         <tr class="${s.active ? '' : 'inactive-row'}">

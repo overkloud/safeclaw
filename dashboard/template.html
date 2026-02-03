@@ -184,14 +184,30 @@
                 resetButton(activeConfirm);
             }
         });
-        async function deleteSession(name) {
-            if (!confirm(`Delete ${name}? This cannot be undone.`)) return;
-            await fetch('/api/delete', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name })
-            });
-            location.reload();
+        function deleteSession(name, btn) {
+            // If already confirming, do the delete
+            if (btn.dataset.confirming === 'true') {
+                fetch('/api/delete', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name })
+                }).then(() => location.reload());
+                return;
+            }
+
+            // Cancel any other active confirm
+            if (activeConfirm && activeConfirm !== btn) {
+                resetButton(activeConfirm);
+            }
+
+            // Show confirm state
+            btn.dataset.confirming = 'true';
+            btn.dataset.originalText = btn.textContent;
+            btn.textContent = 'delete?';
+            activeConfirm = btn;
+
+            // Auto-cancel after 3 seconds
+            btn.timeout = setTimeout(() => resetButton(btn), 3000);
         }
         async function startSession(name) {
             await fetch('/api/start', {
