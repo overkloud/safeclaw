@@ -40,7 +40,7 @@
             text-decoration: none;
         }
         td a:hover { text-decoration: underline; }
-        td:nth-child(2) {
+        .sessions td:nth-child(2) {
             max-width: 30vw;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -104,12 +104,17 @@
         .help td {
             padding: 8px 12px;
             font-size: 16px;
+            vertical-align: top;
+        }
+        .help td:first-child {
+            white-space: nowrap;
         }
         .help code {
             color: #c9c5c0;
         }
         .help td:last-child {
             color: #6b6560;
+            word-wrap: break-word;
         }
         .tip {
             margin-top: 24px;

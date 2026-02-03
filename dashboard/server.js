@@ -181,7 +181,7 @@ function renderContent(sessions) {
 
     return `
     <div class="table-wrapper">
-        <table>
+        <table class="sessions">
             <thead><tr><th>Session</th><th>URL</th><th>Volume</th><th></th></tr></thead>
             <tbody>${sessionRows}</tbody>
         </table>
