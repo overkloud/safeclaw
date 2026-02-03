@@ -5,9 +5,10 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 SECRETS_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/safeclaw/.secrets"
 SESSION_NAME=""
 VOLUME_MOUNT=""
+NO_OPEN=false
 
 # Parse arguments
-while getopts "s:v:" opt; do
+while getopts "s:v:n" opt; do
     case $opt in
         s)
             SESSION_NAME="$OPTARG"
@@ -15,8 +16,11 @@ while getopts "s:v:" opt; do
         v)
             VOLUME_MOUNT="$OPTARG"
             ;;
+        n)
+            NO_OPEN=true
+            ;;
         *)
-            echo "Usage: $0 [-s session_name] [-v /host/path:/container/path]"
+            echo "Usage: $0 [-s session_name] [-v /host/path:/container/path] [-n]"
             exit 1
             ;;
     esac
@@ -180,9 +184,11 @@ echo "SafeClaw is running at: http://localhost:${PORT}"
 echo ""
 echo "To stop: docker stop $CONTAINER_NAME"
 
-# Open in browser
-if command -v open >/dev/null 2>&1; then
-    open "http://localhost:${PORT}"
-elif command -v xdg-open >/dev/null 2>&1; then
-    xdg-open "http://localhost:${PORT}"
+# Open in browser (unless -n flag)
+if [ "$NO_OPEN" = false ]; then
+    if command -v open >/dev/null 2>&1; then
+        open "http://localhost:${PORT}"
+    elif command -v xdg-open >/dev/null 2>&1; then
+        xdg-open "http://localhost:${PORT}"
+    fi
 fi
