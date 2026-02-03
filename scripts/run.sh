@@ -6,9 +6,10 @@ SECRETS_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/safeclaw/.secrets"
 SESSION_NAME=""
 VOLUME_MOUNT=""
 NO_OPEN=false
+QUERY=""
 
 # Parse arguments
-while getopts "s:v:n" opt; do
+while getopts "s:v:nq:" opt; do
     case $opt in
         s)
             SESSION_NAME="$OPTARG"
@@ -19,8 +20,11 @@ while getopts "s:v:n" opt; do
         n)
             NO_OPEN=true
             ;;
+        q)
+            QUERY="$OPTARG"
+            ;;
         *)
-            echo "Usage: $0 [-s session_name] [-v /host/path:/container/path] [-n]"
+            echo "Usage: $0 [-s session_name] [-v /host/path:/container/path] [-n] [-q \"question\"]"
             exit 1
             ;;
     esac
@@ -166,6 +170,12 @@ if [ -f "$SECRETS_DIR/GH_TOKEN" ]; then
             fi
         fi
     '
+fi
+
+# Query mode - run claude -p and exit
+if [ -n "$QUERY" ]; then
+    docker exec $ENV_FLAGS "$CONTAINER_NAME" claude -p "$QUERY"
+    exit 0
 fi
 
 # Set title based on session name
