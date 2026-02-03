@@ -140,7 +140,7 @@ function renderContent(sessions) {
             ? `<a href="${s.url}" target="_blank">${s.url}</a>`
             : `<button class="start-btn" onclick="startSession('${s.name}')">start</button>`;
         const actionBtn = s.active
-            ? `<button class="stop-btn" onclick="stopSession('${s.name}')">stop</button>`
+            ? `<button class="stop-btn" onclick="stopSession('${s.name}', this)">stop</button>`
             : `<button class="delete-btn" onclick="deleteSession('${s.name}')">delete</button>`;
 
         return `
