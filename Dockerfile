@@ -102,7 +102,7 @@ RUN chmod +x /home/sclaw/ttyd-wrapper.sh
 
 # Skills and tools
 COPY --chown=sclaw:sclaw setup/skills /home/sclaw/.claude/skills
-COPY --chown=sclaw:sclaw tools /home/sclaw/tools
+COPY --chown=sclaw:sclaw setup/tools /home/sclaw/tools
 
 # === PATCH Claude Code ===
 
