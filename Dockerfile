@@ -45,9 +45,9 @@ RUN npm install -g @playwright/mcp@${PLAYWRIGHT_MCP_VERSION} && \
     rm -rf ~/.npm/ && \
     chmod -R 777 /ms-playwright
 
-# === INSTALL node-lief ===
+# === INSTALL node-lief and Slack SDK ===
 
-RUN npm install -g node-lief
+RUN npm install -g node-lief @slack/web-api
 ENV NODE_PATH=/usr/lib/node_modules
 
 # === INSTALL Claude Code (native binary) ===
@@ -93,12 +93,16 @@ RUN jq '. + {model: "claude-opus-4-5-20251101"}' /home/sclaw/.claude/settings.js
     mv /tmp/settings.json.tmp /home/sclaw/.claude/settings.json
 
 # Shell aliases and shortcuts
-COPY --chown=sclaw:sclaw setup/bashrc.sh /tmp/bashrc.sh
-RUN cat /tmp/bashrc.sh >> /home/sclaw/.bashrc && rm /tmp/bashrc.sh
+COPY --chown=sclaw:sclaw setup/.bashrc /tmp/.bashrc
+RUN cat /tmp/.bashrc >> /home/sclaw/.bashrc && rm /tmp/.bashrc
 
 # ttyd wrapper script
 COPY --chown=sclaw:sclaw setup/ttyd-wrapper.sh /home/sclaw/ttyd-wrapper.sh
 RUN chmod +x /home/sclaw/ttyd-wrapper.sh
+
+# Skills and tools
+COPY --chown=sclaw:sclaw setup/skills /home/sclaw/.claude/skills
+COPY --chown=sclaw:sclaw tools /home/sclaw/tools
 
 # === PATCH Claude Code ===
 

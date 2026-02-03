@@ -1,5 +1,5 @@
-# Load SafeClaw env vars (tokens written by ttyd-wrapper.sh)
-[ -f ~/.safeclaw-env ] && source ~/.safeclaw-env
+# Load env vars from tmux session
+eval "$(tmux show-environment -s 2>/dev/null)"
 
 # Claude Code aliases
 alias c='claude'

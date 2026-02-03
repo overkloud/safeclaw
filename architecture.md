@@ -74,6 +74,7 @@ We recommend creating a separate GitHub account for SafeClaw so you can scope it
 - ttyd + tmux web terminal (port 7681)
 - Claude Code auth via .claude.json sync from host
 - GitHub auth via GH_TOKEN env var
+- Volume mounting via `run.sh -v` flag
 
 ### To do
 
