@@ -1,6 +1,6 @@
 # SafeClaw
 
-The easiest way to run Claude Code in a Docker container. Secure, isolated, with sensible defaults.
+Multiple Claude Code sessions, each in its own container. Dashboard to manage them all.
 
 See [architecture.md](architecture.md) for design details.
 
