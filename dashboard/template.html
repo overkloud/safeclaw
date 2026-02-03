@@ -58,8 +58,13 @@
         }
         .frames {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(min(100%, 500px), 1fr));
+            grid-template-columns: repeat(2, 1fr);
             gap: 16px;
+        }
+        @media (max-width: 900px) {
+            .frames {
+                grid-template-columns: 1fr;
+            }
         }
         .frame {
             background: #1c1917;
