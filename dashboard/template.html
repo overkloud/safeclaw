@@ -166,6 +166,14 @@
             });
             location.reload();
         }
+
+        // Real-time updates via Server-Sent Events
+        const events = new EventSource('/api/events');
+        events.onmessage = (e) => {
+            if (e.data !== 'connected') {
+                location.reload();
+            }
+        };
     </script>
 </head>
 <body>

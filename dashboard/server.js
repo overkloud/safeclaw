@@ -1,7 +1,23 @@
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
-const { execSync } = require('child_process');
+const { execSync, spawn } = require('child_process');
+
+// SSE clients
+const sseClients = new Set();
+
+// Watch Docker events for safeclaw containers
+const dockerEvents = spawn('docker', ['events', '--filter', 'container=safeclaw', '--format', '{{.Action}}']);
+dockerEvents.stdout.on('data', (data) => {
+    const action = data.toString().trim();
+    if (['start', 'stop', 'die', 'destroy'].includes(action)) {
+        // Notify all SSE clients
+        sseClients.forEach(res => {
+            res.write(`data: ${action}\n\n`);
+        });
+    }
+});
+dockerEvents.on('error', () => {});
 
 const PORT = 7680;
 const TEMPLATE_PATH = path.join(__dirname, 'template.html');
@@ -182,6 +198,16 @@ const server = http.createServer((req, res) => {
             res.writeHead(200, { 'Content-Type': 'application/json' });
             res.end(JSON.stringify({ success }));
         });
+    } else if (url.pathname === '/api/events') {
+        // Server-Sent Events for real-time updates
+        res.writeHead(200, {
+            'Content-Type': 'text/event-stream',
+            'Cache-Control': 'no-cache',
+            'Connection': 'keep-alive'
+        });
+        res.write('data: connected\n\n');
+        sseClients.add(res);
+        req.on('close', () => sseClients.delete(res));
     } else {
         const template = fs.readFileSync(TEMPLATE_PATH, 'utf8');
         const content = renderContent(getSessions());
