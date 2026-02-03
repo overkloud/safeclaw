@@ -21,9 +21,26 @@ See [architecture.md](architecture.md) for design details.
 
 # To mount a local project (host_path:container_path)
 ./scripts/run.sh -v ~/myproject:/home/sclaw/myproject
+
+# Run multiple sessions with -s
+./scripts/run.sh -s work        # safeclaw-work on next available port
+./scripts/run.sh -s research    # safeclaw-research on next available port
 ```
 
 On first run, `run.sh` will prompt you to set up authentication tokens. It then starts a web terminal at http://localhost:7681 and opens it in your browser.
+
+## Dashboard
+
+Manage all sessions from a web dashboard:
+
+```bash
+node dashboard/server.js
+```
+
+Opens at http://localhost:7680 with:
+- All sessions listed with start/stop/delete controls
+- Live iframe views of active sessions
+- Real-time updates via Docker events
 
 ## What's included
 
@@ -58,7 +75,8 @@ You can add any additional secrets by creating files in the `.secrets/` director
 | Script | Description |
 |--------|-------------|
 | `scripts/build.sh` | Build the Docker image and remove old container |
-| `scripts/run.sh` | Start/reuse container, inject auth, start ttyd on port 7681. Use `-v` to mount a volume. |
-| `scripts/restart.sh` | Kill and restart the web terminal (ttyd + tmux) |
+| `scripts/run.sh` | Start/reuse container, inject auth, start ttyd. Use `-s name` for named sessions, `-v` for volumes. |
+| `scripts/restart.sh` | Kill and restart the web terminal (ttyd + tmux). Use `-s name` for named sessions. |
 | `scripts/setup-gemini.sh` | Set up Gemini CLI (optional) |
 | `scripts/setup-slack.sh` | Set up Slack integration (optional) |
+| `dashboard/server.js` | Web dashboard for managing multiple sessions |
