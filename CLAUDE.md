@@ -36,6 +36,9 @@ Start the dashboard to manage all sessions:
 
 ```bash
 node dashboard/server.js
+
+# Or with auto-restart on changes:
+npx nodemon dashboard/server.js
 ```
 
 Opens at http://localhost:7680. Shows all sessions with:
