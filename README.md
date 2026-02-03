@@ -47,6 +47,11 @@ Opens at http://localhost:7680 with:
 - Live iframe views of active sessions
 - Real-time updates via Docker events
 
+## Optional integrations
+
+- `./scripts/setup-gemini.sh` - Add Gemini CLI access
+- `./scripts/setup-slack.sh` - Add Slack read access
+
 ## What's included
 
 - Ubuntu 24.04
@@ -69,11 +74,6 @@ Tokens are stored in `~/.config/safeclaw/.secrets/` and injected as env vars on 
 | `GH_TOKEN` | `gh auth token` or create a PAT at github.com/settings/tokens |
 
 You can add any additional secrets by creating files in the `.secrets/` directory. For example, `SLACK_TOKEN` becomes the `SLACK_TOKEN` env var.
-
-## Optional integrations
-
-- `./scripts/setup-gemini.sh` - Add Gemini CLI access
-- `./scripts/setup-slack.sh` - Add Slack read access
 
 ## Scripts
 
