@@ -1,6 +1,6 @@
 # SafeClaw
 
-Multiple Claude Code sessions, each in its own container. Dashboard to manage them all.
+The easiest way to run multiple Claude Code sessions, each in its own container. With a dashboard to manage them all.
 
 See [architecture.md](architecture.md) for design details.
 
