@@ -10,6 +10,8 @@ See [architecture.md](architecture.md) for design details.
 - **Lightweight** - Spin up, stop, or delete sessions in seconds. Much faster than a full VM.
 - **Portable** - Works on any machine with Docker. Same environment everywhere.
 
+This lets you run Claude Code with `--dangerously-skip-permissions` safely and fast.
+
 ## One session per container
 
 Each Claude Code session runs in its own container. Spin up as many as you need - they're isolated from each other and start in seconds. Run different research tasks, projects, or experiments in parallel without interference.
