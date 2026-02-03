@@ -32,7 +32,8 @@ On first run, `run.sh` will prompt you to set up authentication tokens. It then 
 - Claude Code 2.1.19 (pinned version)
 - GitHub CLI with auto-configured git user
 - Playwright MCP with Chromium
-- Slack read-only skill and tool (optional, requires token)
+- Gemini CLI 0.26.0 (optional - requires API key)
+- Slack read-only skill and tool (optional - requires token)
 - DX plugin, custom status line, shell aliases
 - ttyd web terminal + tmux
 
@@ -49,7 +50,8 @@ You can add any additional secrets by creating files in the `.secrets/` director
 
 ## Optional integrations
 
-Run `./scripts/setup-slack.sh` to add Slack read access. More integrations can be added by creating secrets and corresponding tools.
+- `./scripts/setup-gemini.sh` - Add Gemini CLI access
+- `./scripts/setup-slack.sh` - Add Slack read access
 
 ## Scripts
 
@@ -58,4 +60,5 @@ Run `./scripts/setup-slack.sh` to add Slack read access. More integrations can b
 | `scripts/build.sh` | Build the Docker image and remove old container |
 | `scripts/run.sh` | Start/reuse container, inject auth, start ttyd on port 7681. Use `-v` to mount a volume. |
 | `scripts/restart.sh` | Kill and restart the web terminal (ttyd + tmux) |
+| `scripts/setup-gemini.sh` | Set up Gemini CLI (optional) |
 | `scripts/setup-slack.sh` | Set up Slack integration (optional) |

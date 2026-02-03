@@ -5,6 +5,7 @@ ARG TZ=America/Los_Angeles
 ARG NODE_VERSION=24
 ARG PLAYWRIGHT_MCP_VERSION=0.0.62
 ARG CLAUDE_CODE_VERSION=2.1.19
+ARG GEMINI_CLI_VERSION=0.26.0
 
 ENV LANG=C.UTF-8
 ENV LC_ALL=C.UTF-8
@@ -45,9 +46,9 @@ RUN npm install -g @playwright/mcp@${PLAYWRIGHT_MCP_VERSION} && \
     rm -rf ~/.npm/ && \
     chmod -R 777 /ms-playwright
 
-# === INSTALL node-lief and Slack SDK ===
+# === INSTALL node-lief, Slack SDK, and Gemini CLI ===
 
-RUN npm install -g node-lief @slack/web-api
+RUN npm install -g node-lief @slack/web-api @google/gemini-cli@${GEMINI_CLI_VERSION}
 ENV NODE_PATH=/usr/lib/node_modules
 
 # === INSTALL Claude Code (native binary) ===
