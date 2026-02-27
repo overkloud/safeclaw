@@ -61,12 +61,12 @@ Opens at http://localhost:7680 with:
 
 - Ubuntu 24.04
 - Node.js 24 (LTS)
-- Claude Code 2.1.32 (with [optimized system prompt](https://github.com/ykdojo/claude-code-tips#tip-15-slim-down-the-system-prompt) - starts at ~5% context instead of ~9%)
+- Claude Code 2.1.32
 - GitHub CLI with auto-configured git user
 - Playwright MCP with Chromium
 - Gemini CLI 0.26.0 (optional - requires API key)
 - Slack read-only skill and tool (optional - requires token)
-- [DX plugin](https://github.com/ykdojo/claude-code-tips#tip-44-install-the-dx-plugin), [custom status line](https://github.com/ykdojo/claude-code-tips#tip-0-customize-your-status-line), [shell aliases](#aliases)
+- Custom status line, [shell aliases](#aliases)
 - ttyd web terminal + tmux
 
 ## Sensible defaults
@@ -74,7 +74,7 @@ Opens at http://localhost:7680 with:
 - Claude Code version pinned (currently 2.1.32)
 - `autoCompactEnabled: false` - prevents automatic context compaction
 - `promptSuggestionEnabled: false` - disables prompt suggestions
-- Auto [half-clone](https://github.com/ykdojo/claude-code-tips#half-clone-to-reduce-context) hook at 85% context usage
+- Auto half-clone hook at 85% context usage
 - `--dangerously-skip-permissions` enabled (because it's containerized)
 
 ## Conversation history and memory
